@@ -1,0 +1,47 @@
+using MPI;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace MPI1
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            int sum_total = 0; 
+            int part_sum, i; 
+
+            using (new MPI.Environment(ref args)) 
+            {
+                Intracommunicator comm = Communicator.world; 
+                if (comm.Rank == 0) 
+                {
+                    int[] numbers = new int[comm.Size]; 
+                    for (i = 1; i < comm.Size; i++) 
+                        sum_total = sum_total + numbers[i];
+                }
+
+                part_sum = 0;  
+                for (i = 0; i < comm.Size; i++)
+                    part_sum = part_sum + numbers[i]; 
+                if (comm.Rank != 0)
+                {
+                    comm.Send<int>(part_sum, 1, 0);
+                }
+                else
+                {
+                    sum_total = part_sum;
+                    for (i = 1; i < comm.Size; i++)
+                    {
+                        int part_sum = comm.Receive<int>(i, 0);
+                        sum_total += part_sum;
+                    }
+                }
+                
+            }
+        }
+    }
+}
