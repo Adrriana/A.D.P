@@ -1,0 +1,42 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using MPI;
+
+namespace Tema2_MPI
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Random rand = new Random();
+            using (new MPI.Environment(ref args))
+            {
+                Intracommunicator comm = Communicator.world;
+                int procese = Intercommunicator.world.Size;
+                int randNumber = rand.Next(100);
+                
+                if(comm.Rank == 0)
+                {
+                    int rank = 0, max = randNumber;
+                    int recVal = 0;
+                    for (int i = 1; i < procese; i++)
+                    {
+                        recVal = com.Receive<int>(i, i);
+
+                           if (max < recVal)
+                            {
+                                max = recVal;
+                                rank = i;
+                            }
+                           else if(max == recVal)
+                            {
+                                rank = Math.Max(rank,i);
+                    }
+                }
+            }
+        }
+    }
+}
