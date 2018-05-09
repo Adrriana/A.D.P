@@ -1,0 +1,73 @@
+using MPI;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Tema3
+{
+    class Program
+    {
+        public static void RoyFloyd(int nr_varfuri, int[][] dist,int nr_procese, int rank)
+        {
+            int i; 
+            MPI.Intracommunicator comm = MPI.Communicator.world;
+            for (int k = 0; k < nr_varfuri; k++) 
+            {
+                i = comm.Rank; 
+                {
+                    for (int j = 0; j < nr_varfuri; j++)
+                    {
+                        if (dist[i][k] + dist[k][j] < dist[i][j])   
+                            dist[i][j] = dist[i][k] + dist[k][j];
+                    }
+               
+                    comm.Barrier(); 
+                }
+            }
+            if(comm.Rank == 0)   
+            {
+                Print(nr_varfuri, dist);
+            }
+        }
+
+        
+        public static void Afiseaza(int nr_varfuri, int[][] dist) 
+        {
+            const int infinit = 1500; 
+            for(int i = 0; i < nr_varfuri; i++) 
+            {
+                for(int j = 0; j < nr_varfuri; j++)
+                {
+                    if (dist[i][j] == infinit) 
+                        Console.Write("infinit");
+                    else
+                        Console.Write(dist[i][j]);
+                }
+            }
+        }
+       
+        static void Main(string[] args)
+        {
+            using (new MPI.Environment(ref args)) 
+            {
+                int nr_procese = Communicator.world.Size; 
+                int rank = Communicator.world.Rank;
+                MPI.Intracommunicator comm = MPI.Communicator.world; 
+                
+
+                int[][] Graf ={
+                       new int[]  { 0,   5,  inf, 2 },           
+                       new int[]   { inf, 0,   3, inf },
+                         new int[] { inf, inf, 0 , 2 },
+                         new int[] { inf, inf, inf, 0 }
+                           };
+                RoyFloyd(4, Graf, nr_procese, rank);  
+             
+
+            }
+        }
+    }
+}
+
