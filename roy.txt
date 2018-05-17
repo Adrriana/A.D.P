@@ -1,0 +1,64 @@
+#include "cuda_runtime.h"
+#include "device_launch_parameters.h"
+
+#include <iostream>
+
+
+#define N 4
+const int inf = 1000;
+
+
+
+void print(int *dist) {
+
+  for (int i = 0; i < N; ++i) {
+    for (int j = 0; j < N; ++j)
+    {
+      if (dist[i][j] == inf)
+        std::cout << "inf ,";
+      else
+        std::cout << dist[i][j];
+    }
+    std::cout << std::endl;
+  }
+
+}
+
+__global__ void RoyFloyd(int *dist, int k)
+{
+  int i = threadIdx.x;
+  int j = threadIdx.y;
+    if (dist[i][k] + dist[k][j] < dist[i][j])
+      dist[i][j] = dist[i][k] + dist[k][j];
+
+}
+
+int main()
+{
+  int host_roy[N][N]={
+   {0,1,2,5},
+   {5,7,0,8},
+   {5,8,9,6},
+   {7,9,2,5},
+};
+  int* device_roy;
+  int size=N*N;
+  int numBlocks = 1;
+  int k;
+  dim3 threadsPerBlock(N, N);
+
+ cudaMalloc(&device_roy, size);
+ cudaMemcpy(device_roy, host_roy,size, cudaMemcpyHostToDevice);
+  for (int k = 0; k <= N; k++)
+  {
+   
+    RoyFloyd << <numBlocks, threadsPerBlock > >>(device_roy,k);
+
+  }
+ cudaMemcpy(host_roy , device_roy, size, cudaMemcpyDeviceToHost);
+ cudaFree(device_roy);
+
+
+
+  return 0;
+}
